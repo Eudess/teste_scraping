@@ -17,10 +17,12 @@ class Trf5Spider(scrapy.Spider):
         numero_processo = response.xpath('//body[@class="ff"]/p[2]/text()').get()
         numero_legado = response.xpath('//body[@class="ff"]/p[3]/text()').get()
         data_autuacao = response.xpath('//table//tr//td//div//text()').get()
-        envolvidos = response.xpath('//table[3]//tr//td//text()').extract()
+        envolvidos = response.xpath('//table[3]//tr//td//text()').getall()
         movimentacoes = response.xpath('//table//tr//td//text()').extract()
-        self.log(numero_processo)
-        self.log(numero_legado)
-        self.log(data_autuacao)
-        self.log(envolvidos)
-        self.log(movimentacoes)
+        #self.log(numero_processo)
+        #self.log(numero_legado)
+        #self.log(data_autuacao)
+        #self.log(envolvidos)
+        #self.log(movimentacoes)
+        yield {"numero_processo": numero_processo, "numero_legado": numero_legado, "data_autuacao": data_autuacao,
+               "envolvidos": envolvidos, "movimentacoes": movimentacoes}

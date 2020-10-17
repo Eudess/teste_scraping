@@ -7,6 +7,8 @@ import scrapy
 
 
 class TesteScrapingItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    numero_processo = scrapy.Field()
+    numero_legado = scrapy.Field()
+    data_autuacao = scrapy.Field()
+    envolvidos = scrapy.Field()
+    movimentacoes = scrapy.Field()
