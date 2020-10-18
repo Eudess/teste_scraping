@@ -6,7 +6,7 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-
+import re
 
 class TesteScrapingPipeline:
     def process_item(self, item, spider):
@@ -19,12 +19,11 @@ class TesteScrapingPipeline:
 
         item['data_autuacao'] = self.cleaned_data_autuacao(item['data_autuacao'])
         item['envolvidos'] = self.cleaned_envolvidos(self.cleaned_char_envolvidos(item['envolvidos']))
-        item['movimentacoes'] = self.cleaned_char_movimentacoes((item['movimentacoes']))
-        #item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_list((item['movimentacoes'])))
-
+        item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_char_movimentacoes((item['movimentacoes'])))
 
         return item
 
+    #Função para limpar a data.
     def cleaned_data_autuacao(self, date):
         check_date = "0123456789/"
         new_date = ""
@@ -33,6 +32,7 @@ class TesteScrapingPipeline:
                 new_date += char
         return new_date
 
+    #Função para tirar os caracteres especiais como: \n \t : \xa0 da lista de envolvidos.
     def cleaned_char_envolvidos(self, envolvidos_list):
         new_list = []
         final_list = []
@@ -50,7 +50,7 @@ class TesteScrapingPipeline:
                 final_list.append(word.strip())
         return final_list
 
-
+    #Função para gerar a lista de dicionário da lista envolvidos.
     def cleaned_envolvidos(self, envolvidos_list):
         count1 = 0
         count2 = 1
@@ -67,6 +67,7 @@ class TesteScrapingPipeline:
             count2 += 2
         return new_list
 
+    # Função para tirar os caracteres especiais como: \n \t \xa0 da lista de movimentações.
     def cleaned_char_movimentacoes(self, movimentacoes_list):
         new_list = []
         final_list = []
@@ -83,4 +84,33 @@ class TesteScrapingPipeline:
             if word != "":
                 final_list.append(word.strip())
         return final_list
+
+    #Função para verificar se a data da lista movimentações está no formato certo.
+    def check_date(self, date):
+        mMatch = re.compile(r'Em \d{2}/\d{2}/\d{4} \d{2}:\d{2}')
+        if re.match(mMatch, date):
+            return True
+    #Função que remove os espaços em branco e gera a lista de dicionário da lista movimentações.
+    def cleaned_movimentacoes(self, movimentacoes_list):
+        movimentacoes_list = movimentacoes_list
+        check = 0
+        while check != 1:
+           if not self.check_date(movimentacoes_list[check]):
+               movimentacoes_list.remove(movimentacoes_list[check])
+           else:
+               check = 1
+
+        new_list = []
+        date_key = ""
+        date_key_index = 0
+        count = 0
+        while count < len(movimentacoes_list):
+            if self.check_date(movimentacoes_list[count]):
+                date_key = movimentacoes_list[count]
+                new_list.append({date_key: []})
+                date_key_index += 1
+            elif not self.check_date(movimentacoes_list[count]):
+                new_list[date_key_index-1][date_key].append(movimentacoes_list[count])
+            count += 1
+        return new_list
 
