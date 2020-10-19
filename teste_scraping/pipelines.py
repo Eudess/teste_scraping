@@ -10,18 +10,28 @@ import re
 
 class TesteScrapingPipeline:
     def process_item(self, item, spider):
-        item['numero_legado'] = item['numero_legado'].replace("(", "")
-        item['numero_legado'] = item['numero_legado'].replace(")", "")
-        if item['numero_processo'] != None:
-            item['numero_processo'] = item['numero_processo'].strip()
-        else:
-            item['numero_processo'] = item['numero_legado']
-
+        item['numero_legado'] = self.cleaned_numero_legado(item['numero_legado'])
+        item['numero_processo'] = self.cleaned_numero_processo(item['numero_processo'], item['numero_legado'])
         item['data_autuacao'] = self.cleaned_data_autuacao(item['data_autuacao'])
         item['envolvidos'] = self.cleaned_envolvidos(self.cleaned_char_envolvidos(item['envolvidos']))
         item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_char_movimentacoes((item['movimentacoes'])))
 
         return item
+
+    #Função para limpar numero_legado.
+    def cleaned_numero_legado(self, numero_legado):
+        if numero_legado != None:
+            numero_legado = numero_legado.replace("(", "")
+            numero_legado = numero_legado.replace(")", "")
+
+        return numero_legado
+
+    #Função para limpar e vericar se o numero_processo é Vazio.
+    def cleaned_numero_processo(self,numero_processo, numero_legado):
+        if numero_processo == None:
+            return numero_legado
+        else:
+            return numero_processo.strip()
 
     #Função para limpar a data.
     def cleaned_data_autuacao(self, date):
@@ -32,7 +42,7 @@ class TesteScrapingPipeline:
                 new_date += char
         return new_date
 
-    #Função para tirar os caracteres especiais como: \n \t : \xa0 da lista de envolvidos.
+    #Função para tirar os espaços em branco e os caracteres especiais como: \n \t : \xa0 da lista de envolvidos.
     def cleaned_char_envolvidos(self, envolvidos_list):
         new_list = []
         final_list = []
@@ -67,7 +77,7 @@ class TesteScrapingPipeline:
             count2 += 2
         return new_list
 
-    # Função para tirar os caracteres especiais como: \n \t \xa0 da lista de movimentações.
+    # Função para tirar os espaços em branco e os caracteres especiais como: \n \t \xa0 da lista de movimentações.
     def cleaned_char_movimentacoes(self, movimentacoes_list):
         new_list = []
         final_list = []
@@ -90,7 +100,7 @@ class TesteScrapingPipeline:
         mMatch = re.compile(r'Em \d{2}/\d{2}/\d{4} \d{2}:\d{2}')
         if re.match(mMatch, date):
             return True
-    #Função que remove os espaços em branco e gera a lista de dicionário da lista movimentações.
+    #Função que remove o que não pertence a lista movimentações e gera a lista de dicionário da lista movimentações.
     def cleaned_movimentacoes(self, movimentacoes_list):
         movimentacoes_list = movimentacoes_list
         check = 0
@@ -113,4 +123,3 @@ class TesteScrapingPipeline:
                 new_list[date_key_index-1][date_key].append(movimentacoes_list[count])
             count += 1
         return new_list
-
