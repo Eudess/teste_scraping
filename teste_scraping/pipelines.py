@@ -7,6 +7,8 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import re
+import json
+import os
 
 class TesteScrapingPipeline:
     def process_item(self, item, spider):
@@ -15,6 +17,8 @@ class TesteScrapingPipeline:
         item['data_autuacao'] = self.cleaned_data_autuacao(item['data_autuacao'])
         item['envolvidos'] = self.cleaned_envolvidos(self.cleaned_char_envolvidos(item['envolvidos']))
         item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_char_movimentacoes((item['movimentacoes'])))
+
+        self.save_file(item)
 
         return item
 
@@ -31,7 +35,9 @@ class TesteScrapingPipeline:
         if numero_processo == None:
             return numero_legado
         else:
-            return numero_processo.strip()
+            numero_processo = numero_processo.replace("PROCESSO Nº ", "")
+            numero_processo = numero_processo.strip()
+            return numero_processo
 
     #Função para limpar a data.
     def cleaned_data_autuacao(self, date):
@@ -123,3 +129,20 @@ class TesteScrapingPipeline:
                 new_list[date_key_index-1][date_key].append(movimentacoes_list[count])
             count += 1
         return new_list
+
+    #Função para verificar se um caminho específico existe.
+    def check_path(self, path):
+        if not os.path.exists(path):
+            return True
+
+    #Função para salvar o processo raspado num arquivo json.
+    def save_file(self, item):
+        name = "processo-" + self.cleaned_numero_processo(item['numero_processo'], item['numero_legado'])
+        path = os.getcwd()
+        final_path = path + "/teste_scraping/processos/"
+        if self.check_path(final_path):
+            os.mkdir(final_path)
+        with open(final_path + name, 'w', encoding='utf-8') as json_file:
+            json.dump(item, json_file, ensure_ascii=False, indent=4)
+
+        json_file.close()
