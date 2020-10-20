@@ -1,11 +1,3 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
 import re
 import json
 import os
@@ -143,6 +135,7 @@ class TesteScrapingPipeline:
         if self.check_path(final_path):
             os.mkdir(final_path)
         with open(final_path + name, 'w', encoding='utf-8') as json_file:
-            json.dump(item, json_file, ensure_ascii=False, indent=4)
+            json.dump(dict(item), json_file, ensure_ascii=False, indent=4)
 
         json_file.close()
+
