@@ -1,27 +1,40 @@
 import scrapy
+from selenium import webdriver
+import time
 
 
 class Trf5CnpjSpider(scrapy.Spider):
     name = "trf5_cnpj"
-    start_urls = []
+    start_urls = ["http://www5.trf5.jus.br/cp/"]
 
-    def get_cnpj(self):
-        cnpj = "00.000.000/0001-91"
-        return cnpj
+    def __init__(self):
+        self.chrome_driver = webdriver.Chrome()
+        self.cnpj = "00.000.000/0001-91"
 
     def parse(self, response):
-        yield scrapy.FormRequest.from_response(response, formid={"tipo_xmlcpf"},
-                                               formdata={"filtroCPF2": self.get_cnpj},
-                                               clickdata={"id":"submitConsulta"},
-                                               callback=self.extract_link_process,
-        )
+        self.chrome_driver.get(response.url)
+        self.chrome_driver.find_element_by_id("tipo_xmlcpf").click()
+        set_cnpj = self.chrome_driver.find_element_by_id("filtroCPF2")
+        set_cnpj.send_keys(self.cnpj)
+        self.chrome_driver.find_element_by_id("ordenacao_data").click()
+        self.chrome_driver.find_element_by_id("submitConsulta").submit()
+
+        self.chrome_driver.switch_to_window(self.chrome_driver.window_handles[1])
+        new_url = self.chrome_driver.current_url
+        time.sleep(5)
+        self.log(new_url)
+        request = scrapy.http.Request(new_url, callback=self.extract_link_process)
+
+        return request
 
     def extract_link_process(self, response):
+        self.log(response.url)
         self.log('visitei a página de login: {}'.format(response.url))
-        process_link = response.xpath('//body[@class="ff"]//div//div//div//table//tbody//tr//td//table//tbody//td//a//text()').getall()
-        self.log(process_link)
-
-        yield process_link
+        teste = response.xpath('//body[@class="ff"]//div//text()').getall()
+        #process_link = response.xpath('//body[@class="ff"]//div//div//div//text()').getall()
+        #self.log(process_link)
+        self.log(teste)
+        #yield {"teste": process_link}
 
 """
     def extract_page(self, response):

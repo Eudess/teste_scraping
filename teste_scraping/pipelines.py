@@ -4,15 +4,16 @@ import os
 
 class TesteScrapingPipeline:
     def process_item(self, item, spider):
-        item['numero_legado'] = self.cleaned_numero_legado(item['numero_legado'])
-        item['numero_processo'] = self.cleaned_numero_processo(item['numero_processo'], item['numero_legado'])
-        item['data_autuacao'] = self.cleaned_data_autuacao(item['data_autuacao'])
-        item['envolvidos'] = self.cleaned_envolvidos(self.cleaned_char_envolvidos(item['envolvidos']))
-        item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_char_movimentacoes((item['movimentacoes'])))
+        if spider.name == "trf5":
+            item['numero_legado'] = self.cleaned_numero_legado(item['numero_legado'])
+            item['numero_processo'] = self.cleaned_numero_processo(item['numero_processo'], item['numero_legado'])
+            item['data_autuacao'] = self.cleaned_data_autuacao(item['data_autuacao'])
+            item['envolvidos'] = self.cleaned_envolvidos(self.cleaned_char_envolvidos(item['envolvidos']))
+            item['movimentacoes'] = self.cleaned_movimentacoes(self.cleaned_char_movimentacoes((item['movimentacoes'])))
 
-        self.save_file(item)
+            self.save_file(item)
 
-        return item
+            return item
 
     #Função para limpar numero_legado.
     def cleaned_numero_legado(self, numero_legado):
